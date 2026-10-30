@@ -16,6 +16,7 @@ from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
 import torch
+import torch.nn.functional as F
 import yaml
 from peft import LoraConfig, get_peft_model
 from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -95,6 +96,21 @@ def collate(batch, pad_id: int, device: str) -> dict[str, torch.Tensor]:
     return {"input_ids": input_ids.to(device), "labels": labels.to(device), "attention_mask": attention.to(device)}
 
 
+def masked_loss(model, batch: dict[str, torch.Tensor]) -> tuple[torch.Tensor, int]:
+    """Next-token loss on the tokens the model must learn, and how many there are.
+
+    The usual way multiplies every position by the whole vocabulary (150k+ columns) and only then
+    drops the masked ones. Here the decoder runs as usual, but the output layer is applied only to the
+    positions that count, typically 5-15% of the dialog. Same loss, a fraction of the memory.
+    """
+    base = model.get_base_model() if hasattr(model, "get_base_model") else model
+    hidden = base.get_decoder()(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"]).last_hidden_state
+    targets = batch["labels"][:, 1:]               # position t predicts token t+1
+    keep = targets != -100
+    logits = base.get_output_embeddings()(hidden[:, :-1][keep]).float()
+    return F.cross_entropy(logits, targets[keep]), int(keep.sum())
+
+
 def lr_factor(step: int, warmup: int, total: int) -> float:
     """Linear warmup, then cosine decay to 10% of the peak."""
     if step < warmup:
@@ -108,9 +124,8 @@ def eval_loss(model, data, cfg: TrainConfig, pad_id: int, device: str) -> float:
     model.eval()
     total, count = 0.0, 0
     for i in range(0, len(data), cfg.batch_size):
-        batch = collate(data[i:i + cfg.batch_size], pad_id, device)
-        n = (batch["labels"][:, 1:] != -100).sum().item()  # tokens the loss is computed on
-        total += model(**batch).loss.item() * n
+        loss, n = masked_loss(model, collate(data[i:i + cfg.batch_size], pad_id, device))
+        total += loss.item() * n
         count += n
     model.train()
     return total / max(1, count)
@@ -170,7 +185,7 @@ def train(cfg: TrainConfig) -> dict:
         batches = [order[i:i + cfg.batch_size] for i in range(0, len(order), cfg.batch_size)]
         for b, idx in enumerate(batches):
             batch = collate([train_data[i] for i in idx], tokenizer.pad_token_id, device)
-            loss = model(**batch).loss / cfg.grad_accum
+            loss = masked_loss(model, batch)[0] / cfg.grad_accum
             loss.backward()
             if (b + 1) % cfg.grad_accum and b + 1 < len(batches):
                 continue  # keep accumulating gradients
