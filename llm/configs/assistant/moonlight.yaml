@@ -1,0 +1,19 @@
+# Main target: Moonlight-16B-A3B-Instruct from Moonshot AI (Kimi family, MIT license).
+# Mixture of experts: 16B parameters, 3B active per token. Fits one H100 80 GB in bf16 with LoRA.
+# Needs: pip install tiktoken  (the Kimi tokenizer) and trust_remote_code for the model code.
+base_model: moonshotai/Moonlight-16B-A3B-Instruct
+trust_remote_code: true
+out_dir: runs/assistant-moonlight
+dtype: bfloat16
+max_len: 4096
+lora_r: 32
+lora_alpha: 64
+# Attention (MLA) + shared experts + dense MLP layers. The 64 routed experts stay frozen:
+# adapters on every expert would multiply the adapter size and blur what each expert knows.
+target_modules: '.*\.self_attn\.(q_proj|q_a_proj|q_b_proj|kv_a_proj_with_mqa|kv_b_proj|o_proj)$|.*\.mlp\.shared_experts\.(gate_proj|up_proj|down_proj)$|.*\.layers\.\d+\.mlp\.(gate_proj|up_proj|down_proj)$'
+epochs: 2
+batch_size: 4
+grad_accum: 8
+lr: 1.0e-4
+eval_every: 50
+gradient_checkpointing: true

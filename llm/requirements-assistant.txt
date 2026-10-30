@@ -1,0 +1,5 @@
+# Assistant fine-tuning and serving (aurora_assistant)
+transformers>=4.57
+peft>=0.17
+safetensors>=0.4
+tiktoken>=0.7        # tokenizer of Kimi / Moonlight models

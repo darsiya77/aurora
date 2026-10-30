@@ -1,0 +1,17 @@
+# Larger option: Kimi-Linear-48B-A3B-Instruct (MIT). 48B parameters, 3B active, hybrid linear attention.
+# Needs 2 x H100 80 GB in bf16, plus its CUDA kernels: pip install -U fla-core tiktoken
+base_model: moonshotai/Kimi-Linear-48B-A3B-Instruct
+trust_remote_code: true
+out_dir: runs/assistant-kimi-linear
+dtype: bfloat16
+max_len: 4096
+lora_r: 32
+lora_alpha: 64
+# Kimi Delta Attention + MLA projections + shared experts + dense MLP; 256 routed experts stay frozen.
+target_modules: '.*\.self_attn\.(q_proj|k_proj|v_proj|o_proj|b_proj|f_a_proj|f_b_proj|g_a_proj|g_b_proj|kv_a_proj_with_mqa|kv_b_proj)$|.*\.mlp\.shared_experts\.(gate_proj|up_proj|down_proj)$|.*\.layers\.\d+\.mlp\.(gate_proj|up_proj|down_proj)$'
+epochs: 2
+batch_size: 2
+grad_accum: 16
+lr: 1.0e-4
+eval_every: 50
+gradient_checkpointing: true

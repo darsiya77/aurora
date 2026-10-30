@@ -11,6 +11,7 @@ dependencies = ["torch>=2.3", "tokenizers>=0.19", "numpy>=1.26", "pyyaml>=6.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+assistant = ["transformers>=4.57", "peft>=0.17", "safetensors>=0.4", "tiktoken>=0.7"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

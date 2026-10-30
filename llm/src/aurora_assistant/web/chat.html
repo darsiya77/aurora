@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Аврора · чат с моделью</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: sidebar (model, examples) | chat | account panel (portfolio, rules, journal). Phones: chat + slide-in panels. */
+:root {
+  --bg: #F4F5F7; --card: #FFFFFF; --inset: #EFF0F2; --line: #E6E7EB; --fg: #1B1C1F; --fg2: #5D626A; --muted: #959AA2;
+  --accent: #FFDD2D; --accent-soft: #FFF6C7; --on-accent: #1B1C1F; --good: #00A14B; --bad: #F0453A; --warn: #E08A00; --key: #6D4FE0;
+  --shadow: 0 1px 2px rgba(20, 22, 26, .04), 0 10px 30px -14px rgba(20, 22, 26, .16);
+  --font: "Onest", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ease: cubic-bezier(.22, .9, .3, 1);
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0B0B0D; --card: #17171B; --inset: #222227; --line: #2A2A30; --fg: #F2F2F4; --fg2: #B5B7BE; --muted: #7E828B;
+  --accent-soft: #3A3317; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.6); color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0B0B0D; --card: #17171B; --inset: #222227; --line: #2A2A30; --fg: #F2F2F4; --fg2: #B5B7BE; --muted: #7E828B;
+  --accent-soft: #3A3317; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.6); color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--font); }
+button, textarea, input { font: inherit; color: inherit; }
+button { cursor: pointer; border: 0; background: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app { height: 100%; display: grid; grid-template-columns: 270px minmax(0, 1fr) 330px; gap: 14px; padding: 14px max(14px, env(safe-area-inset-right)) 14px max(14px, env(safe-area-inset-left)); }
+.side, .panel { background: var(--card); border-radius: 24px; box-shadow: var(--shadow); padding: 18px; display: flex; flex-direction: column; gap: 14px; min-height: 0; overflow: auto; scrollbar-width: thin; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.orb { width: 40px; height: 40px; border-radius: 14px; background: radial-gradient(circle at 30% 30%, #FFF3A0, var(--accent) 45%, #F2B705); box-shadow: 0 6px 18px -6px rgba(242,183,5,.7); flex: none; display: grid; place-items: center; font-weight: 800; color: var(--on-accent); }
+.brand b { font-size: 17px; }
+.cap { font-size: 12.5px; color: var(--muted); }
+.h { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.model { padding: 10px 12px; border-radius: 14px; background: var(--inset); font-size: 13px; word-break: break-word; }
+.model i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--good); margin-right: 6px; }
+.chips { display: flex; flex-direction: column; gap: 6px; }
+.chip { text-align: left; padding: 9px 12px; border-radius: 12px; background: var(--inset); font-size: 13.5px; transition: background .2s, transform .15s; }
+.chip:hover { background: var(--accent-soft); }
+.chip:active { transform: scale(.98); }
+.teach { padding: 12px; border-radius: 16px; background: linear-gradient(135deg, var(--accent-soft), var(--inset)); font-size: 13px; }
+.teach b { font-size: 22px; font-weight: 800; display: block; }
+.btn { height: 40px; padding: 0 14px; border-radius: 12px; background: var(--inset); font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: background .2s, transform .15s; }
+.btn:hover { background: var(--line); }
+.btn.primary { background: var(--accent); color: var(--on-accent); }
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .5; cursor: default; }
+/* chat */
+.chat { display: flex; flex-direction: column; min-height: 0; background: var(--card); border-radius: 24px; box-shadow: var(--shadow); overflow: hidden; }
+.top { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
+.top .grow { flex: 1; min-width: 0; }
+.top b { font-size: 16px; }
+.icon { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--inset); flex: none; }
+.icon svg { width: 18px; height: 18px; }
+.mobile { display: none; }
+.msgs { flex: 1; min-height: 0; overflow-y: auto; padding: 20px 18px 10px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
+.empty { margin: auto; max-width: 440px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--fg2); }
+.empty .orb { width: 64px; height: 64px; border-radius: 22px; font-size: 26px; }
+.empty h1 { margin: 0; font-size: 22px; color: var(--fg); text-wrap: balance; }
+.row { display: flex; gap: 10px; align-items: flex-end; animation: in .35s var(--ease) both; }
+@keyframes in { from { opacity: 0; transform: translateY(8px); } }
+.row.me { justify-content: flex-end; }
+.row .orb { width: 30px; height: 30px; border-radius: 10px; font-size: 13px; }
+.bubble { max-width: min(640px, 82%); padding: 11px 14px; border-radius: 18px; background: var(--inset); white-space: pre-wrap; word-wrap: break-word; }
+.me .bubble { background: var(--accent); color: var(--on-accent); border-bottom-right-radius: 6px; }
+.ai .bubble { border-bottom-left-radius: 6px; }
+.ai-col { display: flex; flex-direction: column; gap: 6px; max-width: min(660px, 86%); }
+.ai-col .bubble { max-width: 100%; }
+.step { border-radius: 14px; border: 1px solid var(--line); padding: 9px 12px; font-size: 13px; display: flex; flex-direction: column; gap: 4px; background: var(--card); }
+.step .t { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.step code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; color: var(--fg2); }
+.tag { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 99px; background: var(--inset); white-space: nowrap; }
+.tag.executed, .tag.rule_applied { background: color-mix(in srgb, var(--good) 15%, transparent); color: var(--good); }
+.tag.denied { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad); }
+.tag.waiting_client, .tag.rule_pending { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn); }
+.tag.waiting_second_key { background: color-mix(in srgb, var(--key) 15%, transparent); color: var(--key); }
+.checks { margin: 2px 0 0; padding: 0; list-style: none; color: var(--fg2); }
+.checks li::before { content: "✓ "; color: var(--good); }
+.checks li.no::before { content: "✗ "; color: var(--bad); }
+.tools { display: flex; gap: 6px; }
+.tools button { font-size: 12.5px; color: var(--muted); padding: 2px 6px; border-radius: 8px; }
+.tools button:hover { background: var(--inset); color: var(--fg); }
+.fix { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 16px; box-shadow: inset 0 0 0 1.5px var(--accent); background: var(--card); }
+.fix textarea { width: 100%; min-height: 90px; border: 0; background: var(--inset); border-radius: 12px; padding: 10px 12px; resize: vertical; outline: none; }
+.fix .acts { display: flex; gap: 8px; justify-content: flex-end; }
+.typing { display: flex; gap: 4px; padding: 14px 16px; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: dot 1.2s infinite; }
+.typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes dot { 0%, 60%, 100% { opacity: .3; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+.compose { padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: flex-end; }
+.compose textarea { flex: 1; min-height: 46px; max-height: 180px; resize: none; border: 0; outline: none; border-radius: 16px; padding: 12px 14px; background: var(--inset); }
+.send { width: 46px; height: 46px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; flex: none; transition: transform .15s; }
+.send:active { transform: scale(.92); }
+.send svg { width: 20px; height: 20px; }
+/* account panel */
+.big { font-size: 26px; font-weight: 800; letter-spacing: -.02em; }
+.list { display: flex; flex-direction: column; }
+.li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; font-size: 13.5px; }
+.li + .li { border-top: 1px solid var(--line); }
+.li span:last-child { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; white-space: nowrap; }
+.wait { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 14px; background: var(--accent-soft); font-size: 13.5px; }
+.wait .acts { display: flex; gap: 6px; }
+.wait .btn { height: 34px; font-size: 13px; }
+.jr { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; padding: 7px 0; font-size: 12.5px; }
+.jr + .jr { border-top: 1px solid var(--line); }
+.jr code { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--muted); }
+.jr .e { color: var(--fg2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ok { color: var(--good); font-weight: 600; } .broken { color: var(--bad); font-weight: 600; }
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; background: var(--fg); color: var(--bg); padding: 10px 16px; border-radius: 14px; font-size: 14px; transition: all .3s var(--ease); pointer-events: none; z-index: 20; }
+.toast.on { opacity: 1; transform: translate(-50%, 0); }
+.err { color: var(--bad); }
+@media (max-width: 1100px) { .app { grid-template-columns: minmax(0, 1fr) 320px; } .side { display: none; } .mobile.menu { display: grid; } }
+@media (max-width: 760px) {
+  .app { grid-template-columns: 1fr; padding: 0; gap: 0; }
+  .chat { border-radius: 0; box-shadow: none; }
+  .panel, .side { position: fixed; inset: 0 0 0 auto; width: min(360px, 92vw); z-index: 10; border-radius: 24px 0 0 24px; transform: translateX(105%); transition: transform .35s var(--ease); display: flex; }
+  .side { inset: 0 auto 0 0; border-radius: 0 24px 24px 0; transform: translateX(-105%); }
+  .panel.open, .side.open { transform: none; }
+  .mobile { display: grid; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Модель и примеры">
+    <div class="brand"><div class="orb">А</div><div><b>Аврора</b><div class="cap">чат с нашей моделью</div></div></div>
+    <div><div class="h">Модель</div><div class="model" id="model"><i></i>подключаюсь…</div></div>
+    <div class="teach"><div class="cap">Исправленных ответов для дообучения</div><b id="fb">0</b><div class="cap">Нажмите «Исправить» под ответом, чтобы научить модель</div></div>
+    <div><div class="h">Попробуйте</div></div>
+    <div class="chips" id="examples"></div>
+    <button class="btn" id="reset">Новый диалог и счёт</button>
+  </aside>
+
+  <main class="chat">
+    <div class="top">
+      <button class="icon mobile menu" id="openSide" aria-label="Модель и примеры"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="orb">А</div>
+      <div class="grow"><b>Аврора</b><div class="cap">Отвечает на вопросы и выполняет действия. Каждое действие проверяют ваши правила.</div></div>
+      <button class="icon" id="theme" aria-label="Сменить тему"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg></button>
+      <button class="icon mobile" id="openPanel" aria-label="Счёт и журнал"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16v12H4zM8 7V5h8v2"/></svg></button>
+    </div>
+    <div class="msgs" id="msgs" aria-live="polite">
+      <div class="empty" id="empty"><div class="orb">А</div><h1>Спросите что угодно или попросите действие</h1><div>Например: «Что у меня в портфеле?», «Купи 5 акций Сбера», «Что такое облигация?», «Расскажи, как устроена Аврора».</div></div>
+    </div>
+    <form class="compose" id="form" autocomplete="off">
+      <textarea id="input" rows="1" placeholder="Сообщение Авроре" aria-label="Сообщение"></textarea>
+      <button class="send" type="submit" aria-label="Отправить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    </form>
+  </main>
+
+  <aside class="panel" id="panel" aria-label="Счёт, правила и журнал">
+    <div><div class="h">Демо-счёт</div><div class="big" id="total">—</div><div class="cap" id="cash"></div></div>
+    <div id="waiting"></div>
+    <div><div class="h">Бумаги</div><div class="list" id="positions"></div></div>
+    <div><div class="h">Мои правила</div><div class="list" id="rules"></div><div id="pending"></div></div>
+    <div><div class="h">Журнал <span id="jok"></span></div><div id="journal"></div></div>
+  </aside>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const STATUS = { executed: 'исполнено', denied: 'запрещено', waiting_client: 'ждёт подтверждения', waiting_second_key: 'ждёт близкого', rule_applied: 'вступило сразу', rule_pending: 'через 24 часа' };
+const EXAMPLES = ['Что у меня в портфеле?', 'Купи 5 акций Сбера', 'Выведи 60 000 на мою карту', 'Мне звонят из службы безопасности и просят перевести деньги', 'Поставь лимит на одну компанию 15%', 'Что такое облигация?', 'Расскажи, как устроена Аврора и зачем ей проверка правил'];
+let session = '', busy = false;
+try { session = sessionStorage.getItem('aurora-session') || ''; } catch (e) {}
+
+function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2600); }
+
+async function api(path, body) {
+  const r = await fetch(path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session, ...body }) } : undefined);
+  const data = await r.json().catch(() => ({ error: 'Сервер вернул не JSON' }));
+  if (!r.ok) throw new Error(data.error || r.statusText);
+  return data;
+}
+
+function renderState(s) {
+  $('total').textContent = s.total;
+  $('cash').textContent = 'Свободно ' + s.cash;
+  $('positions').innerHTML = s.positions.map(p => `<div class="li"><span>${esc(p.name)} · ${p.qty} шт.</span><span>${esc(p.value)}</span></div>`).join('') || '<div class="cap">Бумаг нет</div>';
+  $('rules').innerHTML = s.rules.map(r => `<div class="li"><span>${esc(r.label)}</span><span>${esc(r.value)}</span></div>`).join('');
+  $('pending').innerHTML = s.pending_rules.map(p => `<div class="cap">⏳ ${esc(p.label)} станет ${esc(p.value)} в ${esc(p.at)}</div>`).join('');
+  $('waiting').innerHTML = s.waiting.map(w => `<div class="wait"><b>${esc(w.action)}</b><span class="cap">${w.kind === 'waiting_second_key' ? 'Ответ доверенного человека' : 'Ваше подтверждение'}</span>
+    <div class="acts"><button class="btn primary" data-t="${w.ticket}" data-yes="1">${w.kind === 'waiting_second_key' ? 'Близкий: да' : 'Подтвердить'}</button><button class="btn" data-t="${w.ticket}" data-yes="0">Отклонить</button></div></div>`).join('');
+  $('journal').innerHTML = s.journal.map(j => `<div class="jr"><code>#${j.n} ${j.hash}</code><span class="e">${esc(j.event)}${j.text ? ' · ' + esc(j.text) : ''}${j.verdict ? ' · ' + esc(j.verdict) : ''}</span></div>`).join('') || '<div class="cap">Пока пусто</div>';
+  $('jok').innerHTML = s.journal_ok ? '<span class="ok">· цепочка цела</span>' : '<span class="broken">· нарушена</span>';
+}
+
+function stepHTML(s) {
+  const r = s.result || {}, args = Object.keys(s.arguments || {}).length ? JSON.stringify(s.arguments) : '';
+  const status = r.status ? `<span class="tag ${r.status}">${STATUS[r.status] || r.status}</span>` : r.error ? '<span class="tag denied">ошибка</span>' : '<span class="tag">данные</span>';
+  const checks = (r.checks || []).map(c => `<li class="${c.ok ? '' : 'no'}">${esc(c.text)}</li>`).join('');
+  return `<div class="step"><div class="t"><b>${esc(s.tool)}</b><code>${esc(args)}</code>${status}</div>${checks ? `<ul class="checks">${checks}</ul>` : ''}${r.error ? `<div class="err">${esc(r.error)}</div>` : ''}</div>`;
+}
+
+function addRow(role, html) {
+  $('empty')?.remove();
+  const row = document.createElement('div');
+  row.className = 'row ' + role;
+  row.innerHTML = html;
+  $('msgs').appendChild(row);
+  $('msgs').scrollTop = $('msgs').scrollHeight;
+  return row;
+}
+
+function addAnswer(reply, steps) {
+  const row = addRow('ai', `<div class="orb">А</div><div class="ai-col">${steps.map(stepHTML).join('')}<div class="bubble">${esc(reply)}</div>
+    <div class="tools"><button data-fix>Исправить ответ</button><button data-copy>Копировать</button></div></div>`);
+  row.querySelector('[data-copy]').onclick = () => navigator.clipboard?.writeText(reply).then(() => toast('Скопировано')).catch(() => toast('Не удалось скопировать'));
+  row.querySelector('[data-fix]').onclick = () => openFix(row, reply);
+}
+
+function openFix(row, reply) {
+  const col = row.querySelector('.ai-col');
+  if (col.querySelector('.fix')) return;
+  const box = document.createElement('div');
+  box.className = 'fix';
+  box.innerHTML = `<span class="cap">Как должна была ответить Аврора? Это станет обучающим примером.</span><textarea>${esc(reply)}</textarea>
+    <div class="acts"><button class="btn" data-cancel>Отмена</button><button class="btn primary" data-save>Сохранить для обучения</button></div>`;
+  col.appendChild(box);
+  box.querySelector('textarea').focus();
+  box.querySelector('[data-cancel]').onclick = () => box.remove();
+  box.querySelector('[data-save]').onclick = async () => {
+    const text = box.querySelector('textarea').value.trim();
+    if (!text) return toast('Напишите правильный ответ');
+    try {
+      const d = await api('/api/feedback', { corrected: text });
+      col.querySelector('.bubble').textContent = text;
+      box.remove();
+      $('fb').textContent = d.feedback;
+      toast('Сохранено. Примеров для дообучения: ' + d.feedback);
+    } catch (e) { toast(e.message); }
+  };
+}
+
+async function send(text) {
+  if (busy || !text.trim()) return;
+  busy = true;
+  addRow('me', `<div class="bubble">${esc(text)}</div>`);
+  const typing = addRow('ai', '<div class="orb">А</div><div class="bubble typing" aria-label="Аврора думает"><i></i><i></i><i></i></div>');
+  try {
+    const d = await api('/api/chat', { message: text });
+    typing.remove();
+    addAnswer(d.reply, d.steps);
+    renderState(d.state);
+  } catch (e) {
+    typing.remove();
+    addRow('ai', `<div class="orb">А</div><div class="bubble err">${esc(e.message)}</div>`);
+  }
+  busy = false;
+}
+
+$('form').onsubmit = e => { e.preventDefault(); const t = $('input').value; $('input').value = ''; autoGrow(); send(t); };
+$('input').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('form').requestSubmit(); } });
+const autoGrow = () => { const t = $('input'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 180) + 'px'; };
+$('input').addEventListener('input', autoGrow);
+$('examples').innerHTML = EXAMPLES.map(x => `<button class="chip">${esc(x)}</button>`).join('');
+$('examples').onclick = e => { const b = e.target.closest('.chip'); if (b) { $('side').classList.remove('open'); send(b.textContent); } };
+$('panel').onclick = async e => {
+  const b = e.target.closest('[data-t]'); if (!b) return;
+  try { const d = await api('/api/confirm', { ticket: +b.dataset.t, yes: b.dataset.yes === '1' }); renderState(d.state); toast(STATUS[d.status] || 'Срок подтверждения истёк'); }
+  catch (err) { toast(err.message); }
+};
+$('reset').onclick = async () => { const d = await api('/api/reset', {}); renderState(d.state); $('msgs').innerHTML = ''; toast('Новый диалог, счёт сброшен'); };
+$('theme').onclick = () => { const dark = matchMedia('(prefers-color-scheme: dark)').matches; const cur = document.documentElement.dataset.theme || (dark ? 'dark' : 'light'); document.documentElement.dataset.theme = cur === 'dark' ? 'light' : 'dark'; };
+$('openSide').onclick = () => $('side').classList.toggle('open');
+$('openPanel').onclick = () => $('panel').classList.toggle('open');
+
+(async () => {
+  try {
+    const info = await api('/api/info');
+    if (!session) { session = info.session; try { sessionStorage.setItem('aurora-session', session); } catch (e) {} }
+    $('model').innerHTML = `<i></i>${esc(info.model)}`;
+    $('fb').textContent = info.feedback;
+    renderState(await api('/api/state?session=' + session));
+  } catch (e) { $('model').textContent = 'Сервер недоступен: ' + e.message; }
+})();
+</script>
+</body>
+</html>

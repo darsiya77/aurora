@@ -1,0 +1,15 @@
+# Local check on a CPU: a 0.5B open chat model (Apache 2.0). Same code as the Kimi configs.
+base_model: Qwen/Qwen2.5-0.5B-Instruct
+out_dir: runs/assistant-tiny-qwen
+dtype: float32
+max_len: 1024
+lora_r: 16
+lora_alpha: 32
+target_modules: [q_proj, k_proj, v_proj, o_proj, gate_proj, up_proj, down_proj]
+epochs: 1
+batch_size: 2
+grad_accum: 4
+lr: 2.0e-4
+eval_every: 25
+max_eval_dialogs: 32
+gradient_checkpointing: false

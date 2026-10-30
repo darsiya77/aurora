@@ -70,7 +70,8 @@ def check(a: Action, p: Portfolio, r: Rules, day: DayStats) -> Decision:
             amount = p.value_of(a.ticker, a.qty)
             add(day.sold_rub + amount <= r.big_sale_rub, "big_sale",
                 f"Продажи за день {rub(day.sold_rub + amount)}, без согласия до {rub(r.big_sale_rub)}", Verdict.ASK_CLIENT)
-        add(not a.sell_all, "panic_pause", f"«Продать всё» — сначала факты и пауза {r.panic_pause_min} минут", Verdict.ASK_CLIENT)
+        add(not a.sell_all, "panic_pause", f"«Продать всё» — сначала факты и пауза {r.panic_pause_min} минут", Verdict.ASK_CLIENT,
+            "Продажа без паузы: это не «продать всё»")
         add(day.trades < r.max_trades_per_day, "trades_per_day", f"Сделок сегодня {day.trades} из {r.max_trades_per_day}", Verdict.DENY)
         _trust(add, a, r)
 

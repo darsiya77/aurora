@@ -5,7 +5,6 @@ import itertools
 import math
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-from decimal import Decimal
 
 from .gateway import DayStats, check
 from .ledger import Ledger
@@ -44,6 +43,10 @@ class Aurora:
     def on_event(self, text: str) -> list[Outcome]:
         """Something happened outside: salary, news, a post. Its text is data, not a command."""
         return self._run(self.planner.plan(text, Origin.AGENT, self.portfolio), text)
+
+    def submit(self, actions: list[Action], source: str) -> list[Outcome]:
+        """Actions that a caller (for example the chat assistant) already built and validated."""
+        return self._run(actions, source)
 
     def confirm(self, ticket: int, yes: bool = True) -> Outcome | None:
         """The client answers a proposal that needed their "yes"."""

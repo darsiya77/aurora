@@ -8,3 +8,5 @@ data/tokenizer/
 runs/
 *.bin
 *.pt
+data/assistant/train.jsonl
+data/assistant/eval.jsonl
