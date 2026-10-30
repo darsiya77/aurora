@@ -1,0 +1,8 @@
+# Core: everything needed to prepare data, train, fine-tune and serve.
+torch>=2.3
+tokenizers>=0.19
+numpy>=1.26
+pyyaml>=6.0
+
+# Development
+pytest>=8.0

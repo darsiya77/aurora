@@ -1,0 +1,32 @@
+# Tiny: checks the whole pipeline on a laptop CPU in minutes. Learns spelling, not meaning.
+name: tiny
+model:
+  vocab_size: 8000
+  d_model: 256
+  n_layers: 4
+  n_heads: 8
+  n_kv_heads: 4
+  max_seq_len: 256
+data:
+  processed_dir: data/processed
+  tokenizer_path: data/tokenizer/tokenizer.json
+train:
+  out_dir: runs/tiny
+  batch_size: 16
+  grad_accum: 1
+  max_steps: 800
+  lr: 1.0e-3
+  min_lr: 1.0e-4
+  warmup_steps: 50
+  eval_every: 200
+  eval_batches: 10
+  log_every: 25
+  save_every: 200
+sft:
+  base_checkpoint: runs/tiny/best.pt
+  train_file: data/sft/train.jsonl
+  out_dir: runs/tiny-sft
+  epochs: 4
+  batch_size: 8
+  lr: 3.0e-4
+  warmup_steps: 10
