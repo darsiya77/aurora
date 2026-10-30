@@ -80,7 +80,13 @@ def main():
     tok = Tok(cfg.data.tokenizer_path)
     max_len = s.max_seq_len or base_cfg.model.max_seq_len
     train = load_dialogs(s.train_file, tok, max_len)
-    val = load_dialogs(s.val_file, tok, max_len) if s.val_file else train[: max(1, len(train) // 10)]
+    if s.val_file:
+        val = load_dialogs(s.val_file, tok, max_len)
+    else:
+        # No separate file: hold out 10% so the validation loss measures generalisation, not memory.
+        random.Random(cfg.train.seed).shuffle(train)
+        k = max(1, len(train) // 10)
+        train, val = train[k:], train[:k]
     print(f"dialogs: train={len(train)} val={len(val)}")
 
     opt = model.optimizer(s.lr, 0.0, (0.9, 0.95), device)
