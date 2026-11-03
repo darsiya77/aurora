@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<title>Аврора — промо</title>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #070B10; --ink: #EEF3F7; --muted: #8C9AAB; --line: rgba(255,255,255,.12); --panel: rgba(255,255,255,.05);
+  --teal: #3FD0C9; --green: #5BE38F; --violet: #8B7CF6; --red: #FF6B6B; --amber: #F5B547;
+  --display: "Unbounded", "Inter", sans-serif; --body: "Golos Text", "Inter", sans-serif;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--body); }
+.glow { position: absolute; border-radius: 50%; filter: blur(140px); opacity: .55; will-change: transform; }
+#g1 { width: 900px; height: 520px; background: var(--teal); }
+#g2 { width: 760px; height: 460px; background: var(--violet); }
+#g3 { width: 700px; height: 400px; background: var(--green); opacity: .35; }
+.grain { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.55) 100%); }
+.scene { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 36px; padding: 0 160px; visibility: hidden; }
+.in, .pop { opacity: 0; }
+.kicker { font: 600 26px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--teal); }
+.h { font: 700 76px/1.15 var(--display); text-align: center; letter-spacing: -.01em; max-width: 1500px; }
+.h2 { font: 600 54px/1.2 var(--display); text-align: center; }
+.sub { font: 500 40px/1.35 var(--body); color: var(--muted); text-align: center; max-width: 1400px; }
+.accent { color: var(--teal); }
+.red { color: var(--red); } .green { color: var(--green); } .amber { color: var(--amber); }
+.caret::after { content: ""; display: inline-block; width: 6px; height: .9em; margin-left: 8px; background: var(--teal); vertical-align: -0.1em; }
+
+/* threats */
+.threats { display: flex; gap: 32px; }
+.threat { width: 470px; padding: 40px 36px; border-radius: 28px; background: var(--panel); border: 1px solid rgba(255,107,107,.35); display: grid; gap: 18px; }
+.threat .ic { width: 64px; height: 64px; border-radius: 18px; background: rgba(255,107,107,.14); display: grid; place-items: center; color: var(--red); }
+.threat b { font: 600 34px/1.25 var(--body); }
+.threat span { font: 400 26px/1.4 var(--body); color: var(--muted); }
+svg.i { width: 34px; height: 34px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* logo */
+.logo { font: 700 210px/1 var(--display); letter-spacing: -.02em; background: linear-gradient(100deg, var(--teal), var(--green) 45%, var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tag { font: 600 52px/1.25 var(--display); text-align: center; max-width: 1500px; }
+
+/* demo layout */
+.demo { display: grid; grid-template-columns: 720px 860px; gap: 60px; align-items: start; }
+.chat { display: grid; gap: 22px; }
+.bub { padding: 24px 30px; border-radius: 26px; font: 500 32px/1.35 var(--body); max-width: 680px; }
+.bub small { display: block; font: 600 20px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.me { background: #1E2A38; justify-self: start; border-bottom-left-radius: 8px; }
+.bot { background: var(--panel); border: 1px solid var(--line); justify-self: start; border-bottom-left-radius: 8px; }
+.panel { position: relative; padding: 34px 38px; border-radius: 30px; background: rgba(63,208,201,.07); border: 2px solid rgba(63,208,201,.55); display: grid; gap: 18px; }
+.panel h3 { margin: 0 0 6px; font: 700 34px var(--display); color: var(--teal); display: flex; align-items: center; gap: 14px; }
+.row { display: flex; gap: 16px; align-items: baseline; font: 500 29px/1.35 var(--body); }
+.row .m { font: 700 30px var(--display); width: 34px; flex: none; }
+.stamp { position: absolute; right: -30px; bottom: -64px; padding: 18px 34px; border-radius: 18px; font: 700 46px var(--display); letter-spacing: .06em; transform-origin: center; }
+.stamp.no { color: var(--red); border: 5px solid var(--red); background: rgba(40,8,10,.85); }
+.stamp.ok { color: var(--green); border: 5px solid var(--green); background: rgba(6,32,18,.85); }
+.note { font: 500 34px/1.35 var(--body); color: var(--muted); text-align: center; }
+.note b { color: var(--ink); }
+
+/* panic */
+.panic { display: flex; gap: 90px; align-items: center; }
+.ring { position: relative; width: 380px; height: 380px; flex: none; }
+.ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring .time { position: absolute; inset: 0; display: grid; place-items: center; font: 700 86px var(--display); font-variant-numeric: tabular-nums; }
+.steps { display: grid; gap: 26px; width: 980px; }
+.step { padding: 26px 32px; border-radius: 24px; background: var(--panel); border: 1px solid var(--line); font: 500 32px/1.35 var(--body); }
+.step b { font-weight: 700; }
+
+/* fraud */
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 1600px; }
+.case { padding: 40px; border-radius: 30px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 22px; align-content: start; }
+.case .lbl { font: 600 22px var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.case .act { font: 600 36px/1.3 var(--body); }
+.verdict { display: flex; gap: 16px; align-items: center; padding: 20px 24px; border-radius: 20px; font: 600 30px/1.3 var(--body); }
+.verdict.no { background: rgba(255,107,107,.12); color: var(--red); }
+.verdict.ok { background: rgba(91,227,143,.12); color: var(--green); }
+.verdict.wait { background: rgba(245,181,71,.12); color: var(--amber); }
+
+/* trusted */
+.trusted { display: flex; gap: 100px; align-items: center; }
+.phone { width: 420px; height: 760px; border-radius: 64px; border: 3px solid rgba(255,255,255,.25); background: #0D141C; padding: 90px 26px 26px; position: relative; flex: none; }
+.phone::before { content: ""; position: absolute; top: 22px; left: 50%; width: 120px; height: 32px; margin-left: -60px; border-radius: 20px; background: #000; }
+.notif { border-radius: 30px; background: #1B2633; padding: 28px; display: grid; gap: 14px; }
+.notif small { font: 600 20px var(--display); color: var(--teal); letter-spacing: .06em; }
+.notif b { font: 600 30px/1.3 var(--body); }
+.notif span { font: 400 24px/1.4 var(--body); color: var(--muted); }
+.btns { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px; }
+.btn { padding: 18px; border-radius: 18px; text-align: center; font: 600 24px var(--body); background: rgba(255,255,255,.08); }
+.btn.yes { background: var(--green); color: #05140B; transform-origin: center; }
+
+/* ledger */
+.chain { display: grid; grid-template-columns: repeat(13, 96px); gap: 22px 18px; }
+.blk { height: 96px; border-radius: 18px; border: 2px solid rgba(63,208,201,.6); background: rgba(63,208,201,.08); display: grid; place-items: center; font: 700 28px var(--display); color: var(--teal); position: relative; }
+.blk.bad { border-color: var(--red); background: rgba(255,107,107,.18); color: var(--red); }
+
+/* flow */
+.flow { display: flex; align-items: center; gap: 20px; }
+.node { width: 260px; height: 190px; border-radius: 28px; border: 1.5px solid var(--line); background: var(--panel); display: grid; place-items: center; align-content: center; gap: 14px; text-align: center; }
+.node b { font: 600 32px var(--body); }
+.node span { font: 400 22px var(--body); color: var(--muted); }
+.node svg.i { width: 46px; height: 46px; color: var(--muted); }
+.node.core { width: 320px; height: 230px; border: 3px solid var(--teal); background: rgba(63,208,201,.1); }
+.node.core b { font: 700 40px var(--display); color: var(--teal); }
+.node.core svg.i { color: var(--teal); width: 56px; height: 56px; }
+.arr { color: var(--muted); }
+.arr svg.i { width: 44px; height: 44px; }
+.outs { display: flex; gap: 26px; }
+.out { padding: 20px 34px; border-radius: 999px; font: 600 32px var(--body); }
+.out.ok { background: rgba(91,227,143,.14); color: var(--green); }
+.out.ask { background: rgba(245,181,71,.14); color: var(--amber); }
+.out.no { background: rgba(255,107,107,.14); color: var(--red); }
+.foot { font: 500 28px var(--body); color: var(--muted); letter-spacing: .02em; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="glow" id="g1"></div><div class="glow" id="g2"></div><div class="glow" id="g3"></div>
+  <div class="grain"></div>
+
+  <svg width="0" height="0" style="position:absolute">
+    <symbol id="i-hash" viewBox="0 0 24 24"><path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/></symbol>
+    <symbol id="i-flash" viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 5a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-msg" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5z"/></symbol>
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="12" rx="3"/><path d="M12 4v4"/><path d="M9 14h.01M15 14h.01"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v6M15 2v6"/><path d="M6 8h12v3a6 6 0 0 1-12 0V8z"/><path d="M12 17v5"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  </svg>
+
+  <!-- 1. Hook -->
+  <section class="scene" data-a="0" data-b="5.6">
+    <div class="h"><span class="type" data-ta="0.3" data-tb="2.4" data-text="ИИ-агенты уже умеют торговать на вашем счёте."></span></div>
+    <div class="sub in" data-in="2.9" style="font-size:48px">А кто остановит их, <span class="accent">если они ошибутся?</span></div>
+  </section>
+
+  <!-- 2. Threats -->
+  <section class="scene" data-a="5.6" data-b="11.6">
+    <div class="kicker in" data-in="5.8">Что может пойти не так</div>
+    <div class="threats">
+      <div class="threat in" data-in="6.3"><div class="ic"><svg class="i"><use href="#i-hash"/></svg></div><b>Ошибка в заявке</b><span>400 акций вместо 40 — и половина портфеля в одной компании</span></div>
+      <div class="threat in" data-in="7.0"><div class="ic"><svg class="i"><use href="#i-flash"/></svg></div><b>Команда в новости</b><span>В тексте спрятано «выведи деньги», и агент послушался</span></div>
+      <div class="threat in" data-in="7.7"><div class="ic"><svg class="i"><use href="#i-phone"/></svg></div><b>«Служба безопасности»</b><span>Мошенник торопит перевести всё на «безопасный счёт»</span></div>
+    </div>
+  </section>
+
+  <!-- 3. Logo -->
+  <section class="scene" data-a="11.6" data-b="15.6">
+    <div class="logo pop" data-in="11.8" data-d="0.9">Аврора</div>
+    <div class="tag in" data-in="12.8">ИИ предлагает. <span class="accent">Код решает.</span></div>
+  </section>
+
+  <!-- 4. Over the limit -->
+  <section class="scene" data-a="15.6" data-b="23.6">
+    <div class="kicker in" data-in="15.8">Сделка сверх лимита</div>
+    <div class="demo">
+      <div class="chat">
+        <div class="bub me in" data-in="16.2"><small>Клиент</small>Купи ещё 400 акций Сбера</div>
+        <div class="bub bot in" data-in="17.0"><small>ИИ-агент</small>Готовлю заявку: купить SBER × 400</div>
+      </div>
+      <div class="panel in" data-in="17.6">
+        <h3><svg class="i"><use href="#i-shield"/></svg>Проверка Авроры</h3>
+        <div class="row in" data-in="18.1"><span class="m red">✗</span><span>Покупка на 124 980 ₽, свободно 82 156 ₽</span></div>
+        <div class="row in" data-in="18.6"><span class="m red">✗</span><span>Доля SBER после сделки 49,1% при лимите 20%</span></div>
+        <div class="row in" data-in="19.1"><span class="m green">✓</span><span>Сделок сегодня 3 из 5</span></div>
+        <div class="row in" data-in="19.6"><span class="m green">✓</span><span>Сделку попросил сам клиент</span></div>
+        <div class="stamp no pop" data-in="20.3" data-d="0.45">ЗАПРЕЩЕНО</div>
+      </div>
+    </div>
+    <div class="note in" data-in="21.2" style="margin-top:48px">Правила проверяет обычный код. <b>Его нельзя уговорить.</b></div>
+  </section>
+
+  <!-- 5. Panic -->
+  <section class="scene" data-a="23.6" data-b="30.4">
+    <div class="kicker in" data-in="23.8">Паника на рынке</div>
+    <div class="panic">
+      <div class="ring in" data-in="24.1">
+        <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="6"/><circle id="arc" cx="50" cy="50" r="44" fill="none" stroke="#F5B547" stroke-width="6" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="276.5"/></svg>
+        <div class="time" id="clock">10:00</div>
+      </div>
+      <div class="steps">
+        <div class="step in" data-in="24.2">Клиент: <b>«Продай всё!»</b></div>
+        <div class="step in" data-in="25.0"><span class="amber">⏸</span> Аврора: сначала факты и <b>пауза 10 минут</b></div>
+        <div class="step in" data-in="26.0">Клиент сразу жмёт «да» → <span class="amber">пауза ещё идёт</span></div>
+        <div class="step in" data-in="27.4">Через 11 минут клиент передумал → <b class="green">портфель на месте</b></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Fraud -->
+  <section class="scene" data-a="30.4" data-b="36.8">
+    <div class="kicker in" data-in="30.6">Мошенники и подложенные команды</div>
+    <div class="pair">
+      <div class="case in" data-in="31.0">
+        <div class="lbl">Звонок «службы безопасности»</div>
+        <div class="act">Перевести 300 000 ₽ другому человеку</div>
+        <div class="verdict no pop" data-in="32.2" data-d="0.4">⛔ Переводы другим людям запрещены всегда</div>
+      </div>
+      <div class="case in" data-in="31.8">
+        <div class="lbl">Команда спрятана в новости</div>
+        <div class="act">Вывести 200 000 ₽ на карту</div>
+        <div class="verdict no pop" data-in="33.4" data-d="0.4">⛔ Вывод денег начинает только сам клиент</div>
+      </div>
+    </div>
+    <div class="note in" data-in="34.4">Текст из новостей и постов для Авроры — <b>данные, а не команды</b>.</div>
+  </section>
+
+  <!-- 7. Trusted person -->
+  <section class="scene" data-a="36.8" data-b="42.4">
+    <div class="trusted">
+      <div style="display:grid;gap:30px;width:900px">
+        <div class="kicker in" data-in="37.0">Второй ключ</div>
+        <div class="h2 in" data-in="37.2" style="text-align:left">Крупный вывод подтверждает близкий человек</div>
+        <div class="verdict wait in" data-in="37.9">🔑 Вывести 60 000 ₽ — ждёт доверенного человека</div>
+        <div class="verdict ok pop" id="v-ok" data-in="40.0" data-d="0.4">✓ Аня подтвердила — исполнено</div>
+        <div class="note in" data-in="40.8" style="text-align:left">Молчание 15 минут — это «нет».</div>
+      </div>
+      <div class="phone in" data-in="37.5">
+        <div class="notif">
+          <small>АВРОРА · СЕЙЧАС</small>
+          <b>Папа выводит 60 000 ₽ на свою карту</b>
+          <span>Подтвердите, если это действительно он</span>
+          <div class="btns"><div class="btn">Отклонить</div><div class="btn yes" id="yes">Подтвердить</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. Ledger -->
+  <section class="scene" data-a="42.4" data-b="48.4">
+    <div class="kicker in" data-in="42.6">Журнал, который нельзя переписать</div>
+    <div class="chain" id="chain"></div>
+    <div class="sub in" id="led-a" data-in="43.6">25 записей, каждая связана с предыдущей. <span class="green">Цепочка цела.</span></div>
+    <div class="sub pop" id="led-b" data-in="45.6" data-d="0.4" style="color:var(--ink)">Подменили запись №3 задним числом → <span class="red">проверка нашла нарушение</span></div>
+  </section>
+
+  <!-- 9. Flow -->
+  <section class="scene" data-a="48.4" data-b="54.4">
+    <div class="h2 in" data-in="48.6" style="font-size:46px">Встаёт между любым ИИ-агентом и вашим счётом</div>
+    <div class="flow">
+      <div class="node in" data-in="49.2"><svg class="i"><use href="#i-msg"/></svg><b>Клиент</b></div>
+      <div class="arr in" data-in="49.5"><svg class="i"><use href="#i-arrow"/></svg></div>
+      <div class="node in" data-in="49.7"><svg class="i"><use href="#i-bot"/></svg><b>ИИ-агент</b></div>
+      <div class="arr in" data-in="50.0"><svg class="i"><use href="#i-arrow"/></svg></div>
+      <div class="node core pop" data-in="50.2" data-d="0.5"><svg class="i"><use href="#i-shield"/></svg><b>Аврора</b><span>правила клиента</span></div>
+      <div class="arr in" data-in="50.6"><svg class="i"><use href="#i-arrow"/></svg></div>
+      <div class="node in" data-in="50.8"><svg class="i"><use href="#i-plug"/></svg><b>T-Invest MCP</b></div>
+      <div class="arr in" data-in="51.1"><svg class="i"><use href="#i-arrow"/></svg></div>
+      <div class="node in" data-in="51.3"><svg class="i"><use href="#i-chart"/></svg><b>Биржа</b></div>
+    </div>
+    <div class="outs">
+      <div class="out ok in" data-in="51.9">✓ Выполнить</div>
+      <div class="out ask in" data-in="52.3">? Спросить клиента или близкого</div>
+      <div class="out no in" data-in="52.7">✕ Отказать с объяснением</div>
+    </div>
+  </section>
+
+  <!-- 10. Final -->
+  <section class="scene" data-a="54.4" data-b="61">
+    <div class="logo pop" data-in="54.6" data-d="0.9" style="font-size:180px">Аврора</div>
+    <div class="tag in" data-in="55.6" style="font-size:44px">Предохранитель между ИИ и вашими деньгами</div>
+    <div class="foot in" data-in="56.6">Команда Ryudo · Инвест. Премаркет</div>
+  </section>
+</div>
+
+<script>
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => 1 - Math.pow(1 - clamp(x), 3);
+const back = x => { x = clamp(x); const c = 1.7; return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); };
+
+// ledger blocks
+const chain = document.getElementById('chain');
+for (let i = 1; i <= 25; i++) { const d = document.createElement('div'); d.className = 'blk'; d.textContent = i; d.dataset.i = i; chain.appendChild(d); }
+const blocks = [...chain.children];
+
+const scenes = [...document.querySelectorAll('.scene')].map(el => ({ el, a: +el.dataset.a, b: +el.dataset.b }));
+const ins = [...document.querySelectorAll('.in')];
+const pops = [...document.querySelectorAll('.pop')];
+const types = [...document.querySelectorAll('.type')];
+const g1 = document.getElementById('g1'), g2 = document.getElementById('g2'), g3 = document.getElementById('g3');
+
+window.render = function (t) {
+  g1.style.transform = `translate(${-200 + 260 * Math.sin(t * 0.21)}px, ${-160 + 90 * Math.cos(t * 0.17)}px) rotate(${t * 3}deg)`;
+  g2.style.transform = `translate(${1250 + 220 * Math.cos(t * 0.19)}px, ${640 + 110 * Math.sin(t * 0.23)}px)`;
+  g3.style.transform = `translate(${700 + 300 * Math.sin(t * 0.13 + 1)}px, ${780 + 80 * Math.cos(t * 0.29)}px)`;
+
+  for (const s of scenes) {
+    const on = t >= s.a - 0.001 && t <= s.b + 0.001;
+    s.el.style.visibility = on ? 'visible' : 'hidden';
+    const v = Math.min(ease((t - s.a) / 0.45), 1 - ease((t - (s.b - 0.45)) / 0.45));
+    s.el.style.opacity = on ? v : 0;
+    s.el.style.transform = `scale(${1 + 0.025 * (1 - v)})`;
+  }
+  for (const el of ins) {
+    const p = ease((t - +el.dataset.in) / (+el.dataset.d || 0.6));
+    el.style.opacity = p; el.style.transform = `translateY(${(1 - p) * 28}px)`;
+  }
+  for (const el of pops) {
+    const x = (t - +el.dataset.in) / (+el.dataset.d || 0.5);
+    el.style.opacity = clamp(x * 1.6);
+    const s = x <= 0 ? 1.35 : 1.35 - 0.35 * back(x);
+    el.style.transform = `scale(${s})` + (el.classList.contains('stamp') ? ' rotate(-6deg)' : '');
+  }
+  for (const el of types) {
+    const a = +el.dataset.ta, b = +el.dataset.tb, full = el.dataset.text;
+    el.textContent = full.slice(0, Math.round(full.length * clamp((t - a) / (b - a))));
+    el.classList.toggle('caret', t >= a && t < b + 1.2 && Math.floor(t * 2.5) % 2 === 0);
+  }
+
+  // panic countdown: 10:00 runs down quickly, then freezes at the end of the pause
+  const pr = clamp((t - 25.0) / 2.4);
+  const left = Math.round(600 * (1 - pr));
+  document.getElementById('clock').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
+  document.getElementById('arc').setAttribute('stroke-dashoffset', (276.5 * (1 - pr)).toFixed(2));
+  document.getElementById('arc').setAttribute('stroke', pr >= 1 ? '#5BE38F' : '#F5B547');
+
+  // trusted person presses "Подтвердить"
+  const press = t >= 39.6 && t < 39.9;
+  document.getElementById('yes').style.transform = press ? 'scale(0.92)' : 'scale(1)';
+
+  // ledger: blocks appear one by one, then #3 turns red and shakes
+  blocks.forEach((b, i) => {
+    const p = ease((t - (42.8 + i * 0.05)) / 0.35);
+    b.style.opacity = p;
+    const bad = i === 2 && t >= 45.4;
+    b.classList.toggle('bad', bad);
+    const shake = bad && t < 46.2 ? Math.sin(t * 70) * 6 : 0;
+    b.style.transform = `translate(${shake}px, ${(1 - p) * 16}px)`;
+    if (t >= 45.4 && i > 2) b.style.opacity = Math.min(p, 1 - 0.55 * ease((t - 45.4) / 0.4));
+  });
+  const la = document.getElementById('led-a');
+  if (t >= 45.3) la.style.opacity = Math.min(+la.style.opacity, 1 - ease((t - 45.3) / 0.3));
+};
+window.render(0);
+</script>
+</body>
+</html>
